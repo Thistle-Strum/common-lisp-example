@@ -75,11 +75,6 @@
         (t sequence)))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;; CREATE-PATTERN-1 is the most developed
-
 (om::defmethod! create-pattern-1 (start low high primary-lst secondary bpf-lst) 
   :initvals '(6000 4800 8400 '(2) 100 '(1))
   :indoc '("start" "low" "high" "primary-lst" "secondary" "bpf-lst")
@@ -96,7 +91,7 @@
                                       low high (cdr primary-lst) secondary (cdr bpf-lst))))))
 
 
-;Example #2;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;Example #2 (slight variation on #1);;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (in-package :mfl)
 
@@ -135,7 +130,6 @@
   sequence)
 
 
-;;;;;;;;;;;;;;; "pitch partition" = division across an octave (1200) two octaves (2400)
 (defun mc-sym-div-asc (start pitch-partition primary)
                (let* ((interval (/ pitch-partition primary))
                      (list (loop for i
@@ -148,8 +142,6 @@
                                  (mapcar #'(lambda (x) (if (ratiop x)
                                                            (float x)
                                                                 x)) list)))))
-
-
 
 (defun mc-sym-div-desc (start pitch-partition primary)
                (let* ((interval (/ pitch-partition primary))
@@ -166,7 +158,6 @@
                                                      (float x)
                                                      x)) list))))))
 
-
 (defun mc-pattern-a (start pitch-partition primary-lst bpf-lst)
        (cond ((null bpf-lst) nil) 
              ((= (car bpf-lst) -1)
@@ -174,7 +165,6 @@
                        (permut-random (cdr (mc-sym-div-desc start pitch-partition (car primary-lst))))))
               (t (append (list (car (mc-sym-div-asc start pitch-partition (car primary-lst))))
                         (permut-random (cdr (mc-sym-div-asc start pitch-partition (car primary-lst))))))))
-
 
 
 (defun mc-reverse-direction-if (sequence pitch-partition low high primary)
@@ -210,11 +200,46 @@
                          (+ secondary (car (reverse pattern))))                                      
                      pitch-partition low high (cdr primary-lst) secondary (cdr bpf-lst))))))
 
+;; Example #3 (while a student/with assistance from a mentor)
+
+(defun sum-combos (max-addend sum)
+  ; end the recursion at 1
+  ; fill in with 1's up to sum
+
+  (cond ((= max-addend 1)
+         (list (make-list sum :initial-element 1)))
+        ((= sum 0)
+         '(()))
+        (t
+         (let ((combos (sum-combos (1- max-addend) sum)))
+           (append combos
+                 (when (>= sum max-addend)
+                   (loop for combo in (sum-combos max-addend (- sum max-addend))
+                         collect (cons max-addend combo))))))))
+
+;; Example #4 (while a student/with assistance from a mentor)
+
+(defun our-choose (lis k)
+  ;; this returns a list of subsets
+  (cond ((> k (length lis))
+         "this is impossible")
+
+        ((= k (length lis))
+         (list lis))   ;;; a list with one element, which is the input list
 
 
+        ((= k 1)
+         (loop for element in lis
+               collect (list element)))  ;; e.g. '((a) (b) (c) (d))
 
+       
+        (t ;; the non-trivial case: k > 1 and k < length
+           (let ((subsets-with-first-element (loop for inner-level in (our-choose (cdr lis) (- k 1))
+                                                   collect (cons (first lis) inner-level)))
 
+                 (subsets-without-first-element (our-choose (cdr lis) k)))
 
+             (append subsets-with-first-element subsets-without-first-element)))))
 
 
 
